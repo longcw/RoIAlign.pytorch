@@ -4,6 +4,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Function
 
+from _ext import crop_and_resize as _backend
+
 
 class CropAndResizeFunction(Function):
 
@@ -13,7 +15,10 @@ class CropAndResizeFunction(Function):
         self.extrapolation_value = extrapolation_value
 
     def forward(self, image, boxes, box_ind):
-        pass
+        crops = torch.zeros_like(image)
+        _backend.crop_and_resize_forward(image, boxes, box_ind, self.extrapolation_value, self.crop_height, self.crop_width, crops)
+
+        return crops
 
     def backward(ctx, *grad_outputs):
         pass

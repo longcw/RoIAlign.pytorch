@@ -30,10 +30,10 @@ void CropAndResizePerBox(
     #pragma omp parallel for
     for (b = start_box; b < limit_box; ++b) {
         const float * box = boxes_data + b * 4;
-        const float x1 = box[0];
-        const float y1 = box[1];
-        const float x2 = box[2];
-        const float y2 = box[3];
+        const float y1 = box[0];
+        const float x1 = box[1];
+        const float y2 = box[2];
+        const float x2 = box[3];
 
         const int b_in = box_index_data[b];
         if (b_in < 0 || b_in >= batch_size) {
@@ -129,7 +129,7 @@ void crop_and_resize_forward(
     const int num_boxes = boxes->size[0];
 
     // init output space
-    THFloatTensor_resize4d(crops, num_boxes, depth, image_height, image_width);
+    THFloatTensor_resize4d(crops, num_boxes, depth, crop_height, crop_width);
     THFloatTensor_zero(crops);
 
     // crop_and_resize for each box
