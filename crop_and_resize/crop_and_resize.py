@@ -16,10 +16,23 @@ class CropAndResizeFunction(Function):
 
     def forward(self, image, boxes, box_ind):
         crops = torch.zeros_like(image)
-        _backend.crop_and_resize_forward(image, boxes, box_ind, self.extrapolation_value, self.crop_height, self.crop_width, crops)
+        _backend.crop_and_resize_forward(
+            image, boxes, box_ind,
+            self.extrapolation_value, self.crop_height, self.crop_width, crops)
+
+        # save for backward
+        self.im_size = image.size()
+        self.save_for_backward(boxes, box_ind)
 
         return crops
 
-    def backward(ctx, *grad_outputs):
-        pass
+    def backward(self, grad_outputs):
+        boxes, box_ind = self.saved_tensors
+
+        grad_image = grad_outputs.clone().resize_(*self.im_size).zero_()
+        _backend.crop_and_resize_backward(
+            grad_outputs.clone(), boxes, box_ind, grad_image    # .clone() because a strange bug in pytorch
+        )
+
+        return grad_image, None, None
 

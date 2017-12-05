@@ -1,7 +1,10 @@
 import numpy as np
-import tensorflow as tf
 import torch
 from torch.autograd import Variable
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 
 from crop_and_resize.crop_and_resize import CropAndResizeFunction
 
@@ -10,13 +13,11 @@ def to_varabile(arr):
     return Variable(torch.from_numpy(arr))
 
 
-def test_forward():
+def init_data():
     batch_size = 10
     depth = 32
     im_height = 128
     im_width = 64
-    crop_height = 7
-    crop_width = 10
     n_boxes = 16
 
     # random rois
@@ -29,30 +30,61 @@ def test_forward():
     box_index_data = np.random.randint(0, batch_size, size=n_boxes, dtype=np.int32)
     image_data = np.random.randn(batch_size, depth, im_height, im_width).astype(np.float32)
 
+    return image_data, boxes_data, box_index_data
+
+
+def compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_width):
+
     # pytorch forward
-    image = to_varabile(image_data)
+    image_torch = to_varabile(image_data)
+    image_torch.requires_grad = True
     boxes = to_varabile(boxes_data)
     box_index = to_varabile(box_index_data)
-    crops = CropAndResizeFunction(crop_height, crop_width, 0)(image, boxes, box_index)
+    crops_torch = CropAndResizeFunction(crop_height, crop_width, 0)(image_torch, boxes, box_index)
+    crops_torch_data = crops_torch.data.cpu().numpy()
 
-    crops_torch = crops.data.cpu().numpy()
+    # pytorch backward
+    loss_torch = crops_torch.sum()
+    loss_torch.backward()
+    grad_torch_data = image_torch.grad.data.cpu().numpy()
 
-    # tf forward
+    # tf forward & backward
+    image_tf = tf.placeholder(tf.float32, (None, None, None, None), name='image')
+    boxes = tf.placeholder(tf.float32, (None, 4), name='boxes')
+    box_index = tf.placeholder(tf.int32, (None,), name='box_index')
+
+    image_t = tf.transpose(image_tf, (0, 2, 3, 1))
+    crops_tf = tf.image.crop_and_resize(image_t, boxes, box_index, (crop_height, crop_width))
+    crops_tf = tf.transpose(crops_tf, (0, 3, 1, 2))
+
+    loss_tf = tf.reduce_sum(crops_tf)
+    grad_tf = tf.gradients(loss_tf, image_tf)[0]
+
     with tf.Session() as sess:
-        image = tf.placeholder(tf.float32, (None, depth, im_height, im_width), name='image')
-        boxes = tf.placeholder(tf.float32, (None, 4), name='boxes')
-        box_index = tf.placeholder(tf.int32, (None,), name='box_index')
+        crops_tf_data, grad_tf_data = sess.run(
+            (crops_tf, grad_tf), feed_dict={image_tf: image_data, boxes: boxes_data, box_index: box_index_data}
+        )
 
-        image_t = tf.transpose(image, (0, 2, 3, 1))
-        crops_op = tf.image.crop_and_resize(image_t, boxes, box_index, (crop_height, crop_width))
-        crops_op = tf.transpose(crops_op, (0, 3, 1, 2))
+    crops_diff = np.abs(crops_tf_data - crops_torch_data)
+    grad_diff = np.abs(grad_tf_data - grad_torch_data)
+    print('forward:', crops_diff.min(), crops_diff.max(), crops_diff.mean())
+    print('backward:', grad_diff.min(), grad_diff.max(), grad_diff.mean())
 
-        crops_tf = sess.run(crops_op, feed_dict={image: image_data, boxes: boxes_data, box_index: box_index_data})
 
-    diff = np.abs(crops_tf - crops_torch)
-    print(diff.min(), diff.max(), diff.mean())
+def test_backward(image_data, boxes_data, box_index_data, crop_height, crop_width):
+    # TODO: gradient check
+
     print('end')
 
 
 if __name__ == '__main__':
-    test_forward()
+    crop_height = 7
+    crop_width = 10
+
+    image_data, boxes_data, box_index_data = init_data()
+
+    if tf is not None:
+        compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_width)
+    else:
+        print('without tensorflow')
+    test_backward(image_data, boxes_data, box_index_data, crop_height, crop_width)
