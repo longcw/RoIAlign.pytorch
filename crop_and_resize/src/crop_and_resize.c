@@ -29,7 +29,7 @@ void CropAndResizePerBox(
     int b;
     #pragma omp parallel for
     for (b = start_box; b < limit_box; ++b) {
-        const float * box = boxes_data[b * 4]
+        const float * box = boxes_data + b * 4;
         const float x1 = box[0];
         const float y1 = box[1];
         const float x2 = box[2];
@@ -37,7 +37,7 @@ void CropAndResizePerBox(
 
         const int b_in = box_index_data[b];
         if (b_in < 0 || b_in >= batch_size) {
-            printf('Error: batch_index %d out of range [0, %d)\n', b_in, batch_size);
+            printf("Error: batch_index %d out of range [0, %d)\n", b_in, batch_size);
             exit(-1);
         }
 
@@ -62,7 +62,7 @@ void CropAndResizePerBox(
                     for (int d = 0; d < depth; ++d)
                     {
                         // crops(b, y, x, d) = extrapolation_value;
-                        crops[crop_elements * b + channel_elements * d + y * crop_width + x] = extrapolation_value;
+                        corps_data[crop_elements * b + channel_elements * d + y * crop_width + x] = extrapolation_value;
                     }
                 }
                 continue;
@@ -81,31 +81,31 @@ void CropAndResizePerBox(
                 {
                     for (int d = 0; d < depth; ++d)
                     {
-                        crops[crop_elements * b + channel_elements * d + y * crop_width + x] = extrapolation_value;
+                        corps_data[crop_elements * b + channel_elements * d + y * crop_width + x] = extrapolation_value;
                     }
                     continue;
                 }
-            }
+            
+                const int left_x_index = floorf(in_x);
+                const int right_x_index = ceilf(in_x);
+                const float x_lerp = in_x - left_x_index;
 
-            const int left_x_index = floorf(in_x);
-            const int right_x_index = ceilf(in_x);
-            const float x_lerp = in_x - left_x_index;
+                for (int d = 0; d < depth; ++d)
+                {   
+                    const float *pimage = image_data + b_in * image_elements + d * image_channel_elements;
 
-            for (int d = 0; d < depth; ++d)
-            {   
-                const int pimage = image_data[b_in * image_elements + d * image_channel_elements];
-
-                const float top_left = pimage[top_y_index * image_width + left_x_index];
-                const float top_right = pimage[top_y_index * image_width + right_x_index];
-                const float bottom_left = pimage[bottom_y_index * image_width + left_x_index];
-                const float bottom_right = pimage[bottom_y_index * image_width + right_x_index];
-                
-                const float top = top_left + (top_right - top_left) * x_lerp;
-                const float bottom =
-                    bottom_left + (bottom_right - bottom_left) * x_lerp;
+                    const float top_left = pimage[top_y_index * image_width + left_x_index];
+                    const float top_right = pimage[top_y_index * image_width + right_x_index];
+                    const float bottom_left = pimage[bottom_y_index * image_width + left_x_index];
+                    const float bottom_right = pimage[bottom_y_index * image_width + right_x_index];
                     
-                crops[crop_elements * b + channel_elements * d + y * crop_width + x] = top + (bottom - top) * y_lerp;
-            }
+                    const float top = top_left + (top_right - top_left) * x_lerp;
+                    const float bottom =
+                        bottom_left + (bottom_right - bottom_left) * x_lerp;
+                        
+                    corps_data[crop_elements * b + channel_elements * d + y * crop_width + x] = top + (bottom - top) * y_lerp;
+                }
+            }   // end for x
         }   // end for y
     }   // end for b
 
@@ -126,7 +126,7 @@ void crop_and_resize_forward(
     const int image_height = image->size[2];
     const int image_width = image->size[3];
 
-    const int num_boxes = boxes->size[0]
+    const int num_boxes = boxes->size[0];
 
     // init output space
     THFloatTensor_resize4d(crops, num_boxes, depth, image_height, image_width);
