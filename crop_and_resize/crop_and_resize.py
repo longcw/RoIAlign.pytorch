@@ -42,7 +42,6 @@ class CropAndResizeFunction(Function):
             _backend.crop_and_resize_gpu_backward(
                 grad_outputs, boxes, box_ind, grad_image    # .clone() because a strange bug in pytorch
             )
-            print(grad_image.max())
         else:
             _backend.crop_and_resize_backward(
                 grad_outputs, boxes, box_ind, grad_image    # .clone() because a strange bug in pytorch
