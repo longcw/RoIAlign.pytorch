@@ -49,3 +49,15 @@ class CropAndResizeFunction(Function):
 
         return grad_image, None, None
 
+
+class CropAndResize(nn.Module):
+
+    def __init__(self, crop_height, crop_width, extrapolation_value=0):
+        super(CropAndResize, self).__init__()
+
+        self.crop_height = crop_height
+        self.crop_width = crop_width
+        self.extrapolation_value = extrapolation_value
+
+    def forward(self, image, boxes, box_ind):
+        return CropAndResizeFunction(self.crop_height, self.crop_width, self.extrapolation_value)(image, boxes, box_ind)

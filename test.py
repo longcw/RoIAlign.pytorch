@@ -7,6 +7,7 @@ except ImportError:
     tf = None
 
 from crop_and_resize.crop_and_resize import CropAndResizeFunction
+from roi_align import RoIAlign
 
 
 def to_varabile(arr, requires_grad=False, is_cuda=True):
@@ -17,7 +18,7 @@ def to_varabile(arr, requires_grad=False, is_cuda=True):
     return var
 
 
-def generate_data():
+def generate_data(box_normalize=True):
     batch_size = 10
     depth = 32
     im_height = 128
@@ -25,8 +26,12 @@ def generate_data():
     n_boxes = 16
 
     # random rois
-    xs = np.random.uniform(0, im_width, size=(n_boxes, 2)) / im_width
-    ys = np.random.uniform(0, im_height, size=(n_boxes, 2)) / im_height
+    xs = np.random.uniform(0, im_width, size=(n_boxes, 2))
+    ys = np.random.uniform(0, im_height, size=(n_boxes, 2))
+    if box_normalize:
+        xs /= im_width
+        ys /= im_height
+
     xs.sort(axis=1)
     ys.sort(axis=1)
 
@@ -37,13 +42,16 @@ def generate_data():
     return image_data, boxes_data, box_index_data
 
 
-def compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_width, is_cuda=True):
+def compare_with_tf(crop_height, crop_width, is_cuda=True):
+    # generate data
+    image_data, boxes_data, box_index_data = generate_data(box_normalize=True)
 
     # pytorch forward
     image_torch = to_varabile(image_data, requires_grad=True, is_cuda=is_cuda)
 
     boxes = to_varabile(boxes_data, requires_grad=True, is_cuda=is_cuda)
     box_index = to_varabile(box_index_data, requires_grad=False, is_cuda=is_cuda)
+
     crops_torch = CropAndResizeFunction(crop_height, crop_width, 0)(image_torch, boxes, box_index)
     crops_torch_data = crops_torch.data.cpu().numpy()
 
@@ -76,7 +84,7 @@ def compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_wi
     print('backward:', grad_tf_data.max(), grad_diff.min(), grad_diff.max(), grad_diff.mean())
 
 
-def test_backward(image_data, boxes_data, box_index_data, crop_height, crop_width):
+def test_roialign(crop_height, crop_width):
     # TODO: gradient check
 
     print('end')
@@ -88,12 +96,11 @@ if __name__ == '__main__':
         crop_width = 10
         is_cuda = True
 
-        image_data, boxes_data, box_index_data = generate_data()
-
         if tf is not None:
-            compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_width, is_cuda=is_cuda)
+            compare_with_tf(crop_height, crop_width, is_cuda=is_cuda)
         else:
             print('without tensorflow')
-        test_backward(image_data, boxes_data, box_index_data, crop_height, crop_width)
+
+        test_roialign(crop_height, crop_width)
 
     main()
