@@ -16,9 +16,15 @@ class CropAndResizeFunction(Function):
 
     def forward(self, image, boxes, box_ind):
         crops = torch.zeros_like(image)
-        _backend.crop_and_resize_forward(
-            image, boxes, box_ind,
-            self.extrapolation_value, self.crop_height, self.crop_width, crops)
+
+        if image.is_cuda:
+            _backend.crop_and_resize_gpu_forward(
+                image, boxes, box_ind,
+                self.extrapolation_value, self.crop_height, self.crop_width, crops)
+        else:
+            _backend.crop_and_resize_forward(
+                image, boxes, box_ind,
+                self.extrapolation_value, self.crop_height, self.crop_width, crops)
 
         # save for backward
         self.im_size = image.size()
@@ -29,10 +35,18 @@ class CropAndResizeFunction(Function):
     def backward(self, grad_outputs):
         boxes, box_ind = self.saved_tensors
 
-        grad_image = grad_outputs.clone().resize_(*self.im_size).zero_()
-        _backend.crop_and_resize_backward(
-            grad_outputs.clone(), boxes, box_ind, grad_image    # .clone() because a strange bug in pytorch
-        )
+        grad_outputs = grad_outputs.contiguous()
+        grad_image = torch.zeros_like(grad_outputs).resize_(*self.im_size)
+
+        if grad_outputs.is_cuda:
+            _backend.crop_and_resize_gpu_backward(
+                grad_outputs, boxes, box_ind, grad_image    # .clone() because a strange bug in pytorch
+            )
+            print(grad_image.max())
+        else:
+            _backend.crop_and_resize_backward(
+                grad_outputs, boxes, box_ind, grad_image    # .clone() because a strange bug in pytorch
+            )
 
         return grad_image, None, None
 

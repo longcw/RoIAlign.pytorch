@@ -9,11 +9,15 @@ except ImportError:
 from crop_and_resize.crop_and_resize import CropAndResizeFunction
 
 
-def to_varabile(arr):
-    return Variable(torch.from_numpy(arr))
+def to_varabile(arr, requires_grad=False, is_cuda=True):
+    tensor = torch.from_numpy(arr)
+    if is_cuda:
+        tensor = tensor.cuda()
+    var = Variable(tensor, requires_grad=requires_grad)
+    return var
 
 
-def init_data():
+def generate_data():
     batch_size = 10
     depth = 32
     im_height = 128
@@ -33,13 +37,13 @@ def init_data():
     return image_data, boxes_data, box_index_data
 
 
-def compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_width):
+def compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_width, is_cuda=True):
 
     # pytorch forward
-    image_torch = to_varabile(image_data)
-    image_torch.requires_grad = True
-    boxes = to_varabile(boxes_data)
-    box_index = to_varabile(box_index_data)
+    image_torch = to_varabile(image_data, requires_grad=True, is_cuda=is_cuda)
+
+    boxes = to_varabile(boxes_data, requires_grad=True, is_cuda=is_cuda)
+    box_index = to_varabile(box_index_data, requires_grad=False, is_cuda=is_cuda)
     crops_torch = CropAndResizeFunction(crop_height, crop_width, 0)(image_torch, boxes, box_index)
     crops_torch_data = crops_torch.data.cpu().numpy()
 
@@ -66,9 +70,10 @@ def compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_wi
         )
 
     crops_diff = np.abs(crops_tf_data - crops_torch_data)
+    print('forward:', crops_tf_data.max(), crops_diff.min(), crops_diff.max(), crops_diff.mean())
+
     grad_diff = np.abs(grad_tf_data - grad_torch_data)
-    print('forward:', crops_diff.min(), crops_diff.max(), crops_diff.mean())
-    print('backward:', grad_diff.min(), grad_diff.max(), grad_diff.mean())
+    print('backward:', grad_tf_data.max(), grad_diff.min(), grad_diff.max(), grad_diff.mean())
 
 
 def test_backward(image_data, boxes_data, box_index_data, crop_height, crop_width):
@@ -78,13 +83,17 @@ def test_backward(image_data, boxes_data, box_index_data, crop_height, crop_widt
 
 
 if __name__ == '__main__':
-    crop_height = 7
-    crop_width = 10
+    def main():
+        crop_height = 7
+        crop_width = 10
+        is_cuda = True
 
-    image_data, boxes_data, box_index_data = init_data()
+        image_data, boxes_data, box_index_data = generate_data()
 
-    if tf is not None:
-        compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_width)
-    else:
-        print('without tensorflow')
-    test_backward(image_data, boxes_data, box_index_data, crop_height, crop_width)
+        if tf is not None:
+            compare_with_tf(image_data, boxes_data, box_index_data, crop_height, crop_width, is_cuda=is_cuda)
+        else:
+            print('without tensorflow')
+        test_backward(image_data, boxes_data, box_index_data, crop_height, crop_width)
+
+    main()

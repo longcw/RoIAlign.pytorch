@@ -1,4 +1,4 @@
-#include <TH.h>
+#include <TH/TH.h>
 #include <stdio.h>
 #include <math.h>
 

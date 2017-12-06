@@ -8,13 +8,14 @@ headers = ['src/crop_and_resize.h']
 defines = []
 with_cuda = False
 
-# assert torch.cuda.is_available(), "cuda support need"
-# print('Including CUDA code.')
-# sources += ['src/bnn_cuda.c']
-# headers += ['src/bnn_cuda.h']
-# defines += [('WITH_CUDA', None)]
-#
-# extra_objects = ['src/bnn_cuda_kernel.cu.o']
+extra_objects = []
+if torch.cuda.is_available():
+    print('Including CUDA code.')
+    sources += ['src/crop_and_resize_gpu.c']
+    headers += ['src/crop_and_resize_gpu.h']
+    defines += [('WITH_CUDA', None)]
+    extra_objects += ['src/cuda/crop_and_resize_kernel.cu.o']
+    with_cuda = True
 
 extra_compile_args = ['-fopenmp', '-std=c99']
 
@@ -22,7 +23,7 @@ this_file = os.path.dirname(os.path.realpath(__file__))
 print(this_file)
 sources = [os.path.join(this_file, fname) for fname in sources]
 headers = [os.path.join(this_file, fname) for fname in headers]
-# extra_objects = [os.path.join(this_file, fname) for fname in extra_objects]
+extra_objects = [os.path.join(this_file, fname) for fname in extra_objects]
 
 ffi = create_extension(
     '_ext.crop_and_resize',
@@ -31,7 +32,7 @@ ffi = create_extension(
     define_macros=defines,
     relative_to=__file__,
     with_cuda=with_cuda,
-    # extra_objects=extra_objects,
+    extra_objects=extra_objects,
     extra_compile_args=extra_compile_args
 )
 
