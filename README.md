@@ -16,3 +16,13 @@ that uses boxes with unnormalized `(x1, y1, x2, y2)` as input.
 
 
 ## Usage
+```python
+# input data
+image = to_varabile(image_data, requires_grad=True, is_cuda=is_cuda)
+boxes = to_varabile(boxes_data, requires_grad=False, is_cuda=is_cuda)
+box_index = to_varabile(box_index_data, requires_grad=False, is_cuda=is_cuda)
+
+# RoIAlign layer
+roi_align = CropAndResizeFunction(crop_height, crop_width)
+crops = roi_align(image, boxes, box_index)
+```

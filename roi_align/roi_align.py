@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from crop_and_resize.crop_and_resize import CropAndResizeFunction
+from crop_and_resize import CropAndResizeFunction
 
 
 class RoIAlign(nn.Module):
@@ -22,7 +22,7 @@ class RoIAlign(nn.Module):
         :param box_ind: M
         :return: MxCxoHxoW
         """
-        x1, y1, x2, y2 = torch.split(boxes, 4, dim=1)
+        x1, y1, x2, y2 = torch.split(boxes, 1, dim=1)
 
         spacing_w = (x2 - x1) / float(self.crop_width)
         spacing_h = (y2 - y1) / float(self.crop_height)

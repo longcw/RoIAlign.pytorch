@@ -51,6 +51,10 @@ class CropAndResizeFunction(Function):
 
 
 class CropAndResize(nn.Module):
+    """
+    Crop and resize ported from tensorflow
+    See more details on https://www.tensorflow.org/api_docs/python/tf/image/crop_and_resize
+    """
 
     def __init__(self, crop_height, crop_width, extrapolation_value=0):
         super(CropAndResize, self).__init__()
