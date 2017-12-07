@@ -11,9 +11,13 @@ should be in `NCHW` order in PyTorch.
 They also have the same output value (error < 1e-5) for both forward and backward as we expected, 
 see the comparision in `test.py`.
 
-The `RoIAlign` is a wrap of `crop_and_resize` 
-that uses boxes with unnormalized `(x1, y1, x2, y2)` as input.
-See more details in [tensorpack](https://github.com/ppwwyyxx/tensorpack/blob/6d5ba6a970710eaaa14b89d24aace179eb8ee1af/examples/FasterRCNN/model.py#L301).
+**Note:**
+Document of `crop_and_resize` can be found [here](https://www.tensorflow.org/api_docs/python/tf/image/crop_and_resize).
+And `RoIAlign` is a wrap of `crop_and_resize` 
+that uses boxes with *unnormalized `(x1, y1, x2, y2)`* as input 
+(while `crop_and_resize` use *normalized `(y1, x1, y2, x2)`* as input).
+See more details about the difference of
+ `RoIAlign` and `crop_and_resize` in [tensorpack](https://github.com/ppwwyyxx/tensorpack/blob/6d5ba6a970710eaaa14b89d24aace179eb8ee1af/examples/FasterRCNN/model.py#L301).
 
 
 ## Usage
@@ -26,7 +30,8 @@ See more details in [tensorpack](https://github.com/ppwwyyxx/tensorpack/blob/6d5
 
 + Use RoIAlign or crop_and_resize
     ```python
-    from roi_align.roi_align import RoIAlign, CropAndResize  
+    from roi_align.roi_align import RoIAlign      # RoIAlign module
+    from roi_align.roi_align import CropAndResize # crop_and_resize module
   
     # input data
     image = to_varabile(image_data, requires_grad=True, is_cuda=is_cuda)
