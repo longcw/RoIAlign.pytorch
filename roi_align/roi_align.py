@@ -37,6 +37,10 @@ class RoIAlign(nn.Module):
 
             boxes = torch.cat((ny0, nx0, ny0 + nh, nx0 + nw), 1)
         else:
+            x1 = x1 / float(image_width - 1)
+            x2 = x2 / float(image_width - 1)
+            y1 = y1 / float(image_height - 1)
+            y2 = y2 / float(image_height - 1)
             boxes = torch.cat((y1, x1, y2, x2), 1)
 
         boxes = boxes.detach().contiguous()
