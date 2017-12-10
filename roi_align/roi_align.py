@@ -33,7 +33,7 @@ class RoIAlign(nn.Module):
             nx0 = (x1 + spacing_w / 2 - 0.5) / float(image_width - 1)
             ny0 = (y1 + spacing_h / 2 - 0.5) / float(image_height - 1)
             nw = spacing_w * float(self.crop_width - 1) / float(image_width - 1)
-            nh = spacing_w * float(self.crop_height - 1) / float(image_height - 1)
+            nh = spacing_h * float(self.crop_height - 1) / float(image_height - 1)
 
             boxes = torch.cat((ny0, nx0, ny0 + nh, nx0 + nw), 1)
         else:
