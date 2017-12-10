@@ -38,7 +38,7 @@ def generate_data(batch_size, depth, im_height, im_width, n_boxes, xyxy=False, b
     else:
         boxes_data = np.stack((ys[:, 0], xs[:, 0], ys[:, 1], xs[:, 1]), axis=-1).astype(np.float32)
     box_index_data = np.random.randint(0, batch_size, size=n_boxes, dtype=np.int32)
-    image_data = np.random.randn(batch_size, depth, im_height, im_width).astype(np.float32)
+    image_data = np.random.rand(batch_size, depth, im_height, im_width).astype(np.float32)
 
     return image_data, boxes_data, box_index_data
 
@@ -121,7 +121,7 @@ def test_roialign(is_cuda=True):
     box_index = to_varabile(box_index_data, requires_grad=False, is_cuda=is_cuda)
 
     roi_align = RoIAlign(crop_height, crop_width)
-    gradcheck(roi_align, (image_torch, boxes, box_index))
+    gradcheck(roi_align, (image_torch, boxes, box_index), eps=1e-3)
 
     print('test ok')
 
@@ -137,6 +137,6 @@ if __name__ == '__main__':
         else:
             print('without tensorflow')
 
-        # test_roialign(is_cuda=is_cuda)
+        test_roialign(is_cuda=is_cuda)
 
     main()
