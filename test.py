@@ -38,7 +38,7 @@ def generate_data(batch_size, depth, im_height, im_width, n_boxes, xyxy=False, b
     else:
         boxes_data = np.stack((ys[:, 0], xs[:, 0], ys[:, 1], xs[:, 1]), axis=-1).astype(np.float32)
     box_index_data = np.random.randint(0, batch_size, size=n_boxes, dtype=np.int32)
-    image_data = np.random.rand(batch_size, depth, im_height, im_width).astype(np.float32)
+    image_data = np.random.randn(batch_size, depth, im_height, im_width).astype(np.float32)
 
     return image_data, boxes_data, box_index_data
 
@@ -115,13 +115,15 @@ def test_roialign(is_cuda=True):
         im_width=10,
         n_boxes=2,
         xyxy=True, box_normalize=False)
+    max_inp = np.abs(image_data).max()
+    print('max_input:', max_inp)
 
     image_torch = to_varabile(image_data, requires_grad=True, is_cuda=is_cuda)
     boxes = to_varabile(boxes_data, requires_grad=False, is_cuda=is_cuda)
     box_index = to_varabile(box_index_data, requires_grad=False, is_cuda=is_cuda)
 
-    roi_align = RoIAlign(crop_height, crop_width)
-    gradcheck(roi_align, (image_torch, boxes, box_index), eps=1e-3)
+    roi_align = RoIAlign(crop_height, crop_width, transform_fpcoor=False)
+    gradcheck(roi_align, (image_torch, boxes, box_index), eps=max_inp/500)
 
     print('test ok')
 

@@ -42,3 +42,6 @@ See more details about the difference of
     roi_align = RoIAlign(crop_height, crop_width)
     crops = roi_align(image, boxes, box_index)
     ```
+    
++ [Issue1](https://github.com/longcw/RoIAlign.pytorch/issues/1): gradcheck 
+    and difference of `RoIAlign` and `crop_and_resize`.
