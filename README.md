@@ -45,3 +45,16 @@ See more details about the difference of
     
 + [Issue1](https://github.com/longcw/RoIAlign.pytorch/issues/1): gradcheck 
     and difference of `RoIAlign` and `crop_and_resize`.
+    
++ Changing `-arch` in `make.sh` for your GPU
+    ```
+    # Which CUDA capabilities do we want to pre-build for?
+    # https://developer.nvidia.com/cuda-gpus
+    # Compute/shader model   Cards
+    # 6.1                    P4, P40, Titan Xp, GTX 1080 Ti, GTX 1080
+    # 6.0                    P100
+    # 5.2                    M40, Titan X, GTX 980
+    # 3.7                    K80
+    # 3.5                    K40, K20
+    # 3.0                    K10, Grid K520 (AWS G2)
+    ```
