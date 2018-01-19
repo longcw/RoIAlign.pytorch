@@ -1,9 +1,12 @@
 import numpy as np
 import torch
+from torch import nn
 from torch.autograd import Variable, gradcheck
 try:
     import tensorflow as tf
-except ImportError:
+    import tensorflow.contrib.slim as slim
+except ImportError, e:
+    print(e)
     tf = None
 
 from roi_align.crop_and_resize import CropAndResizeFunction
@@ -43,15 +46,20 @@ def generate_data(batch_size, depth, im_height, im_width, n_boxes, xyxy=False, b
 def compare_with_tf(crop_height, crop_width, is_cuda=True):
     # generate data
     image_data, boxes_data, box_index_data = generate_data(
-        batch_size=16,
-        depth=256,
+        batch_size=2,
+        depth=128,
         im_height=200,
-        im_width=300,
-        n_boxes=100,
+        im_width=200,
+        n_boxes=10,
         xyxy=False, box_normalize=True)
     # boxes_tf_data = np.stack((boxes_data[:, 1], boxes_data[:, 0], boxes_data[:, 3], boxes_data[:, 2]), axis=1)
     # boxes_tf_data[:, 0::2] /= (image_data.shape[2] - 1.)
     # boxes_tf_data[:, 1::2] /= (image_data.shape[3] - 1.)
+
+    # rand conv layer
+    conv_torch = nn.Conv2d(image_data.shape[1], 64, 3, padding=1, bias=False)
+    if is_cuda:
+        conv_torch = conv_torch.cuda()
 
     # pytorch forward
     image_torch = to_varabile(image_data, requires_grad=True, is_cuda=is_cuda)
@@ -60,6 +68,7 @@ def compare_with_tf(crop_height, crop_width, is_cuda=True):
 
     print('pytorch forward and backward start')
     crops_torch = CropAndResizeFunction(crop_height, crop_width, 0)(image_torch, boxes, box_index)
+    crops_torch = conv_torch(crops_torch)
     crops_torch_data = crops_torch.data.cpu().numpy()
 
     # pytorch backward
@@ -76,14 +85,16 @@ def compare_with_tf(crop_height, crop_width, is_cuda=True):
 
     image_t = tf.transpose(image_tf, (0, 2, 3, 1))
     crops_tf = tf.image.crop_and_resize(image_t, boxes, box_index, (crop_height, crop_width))
-    crops_tf = tf.transpose(crops_tf, (0, 3, 1, 2))
+    conv_tf = tf.nn.conv2d(crops_tf, np.transpose(conv_torch.weight.data.cpu().numpy(), (2, 3, 1, 0)),
+                           [1, 1, 1, 1], padding='SAME')
 
-    loss_tf = tf.reduce_sum(crops_tf)
+    trans_tf = tf.transpose(conv_tf, (0, 3, 1, 2))
+    loss_tf = tf.reduce_sum(trans_tf)
     grad_tf = tf.gradients(loss_tf, image_tf)[0]
 
     with tf.Session() as sess:
         crops_tf_data, grad_tf_data = sess.run(
-            (crops_tf, grad_tf), feed_dict={image_tf: image_data, boxes: boxes_data, box_index: box_index_data}
+            (trans_tf, grad_tf), feed_dict={image_tf: image_data, boxes: boxes_data, box_index: box_index_data}
         )
 
     crops_diff = np.abs(crops_tf_data - crops_torch_data)
@@ -104,13 +115,15 @@ def test_roialign(is_cuda=True):
         im_width=10,
         n_boxes=2,
         xyxy=True, box_normalize=False)
+    max_inp = np.abs(image_data).max()
+    print('max_input:', max_inp)
 
     image_torch = to_varabile(image_data, requires_grad=True, is_cuda=is_cuda)
     boxes = to_varabile(boxes_data, requires_grad=False, is_cuda=is_cuda)
     box_index = to_varabile(box_index_data, requires_grad=False, is_cuda=is_cuda)
 
-    roi_align = RoIAlign(crop_height, crop_width)
-    gradcheck(roi_align, (image_torch, boxes, box_index))
+    roi_align = RoIAlign(crop_height, crop_width, transform_fpcoor=False)
+    gradcheck(roi_align, (image_torch, boxes, box_index), eps=max_inp/500)
 
     print('test ok')
 
@@ -126,6 +139,6 @@ if __name__ == '__main__':
         else:
             print('without tensorflow')
 
-        # test_roialign(is_cuda=is_cuda)
+        test_roialign(is_cuda=is_cuda)
 
     main()
