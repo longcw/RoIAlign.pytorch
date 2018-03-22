@@ -17,7 +17,7 @@ if torch.cuda.is_available():
     extra_objects += ['src/cuda/crop_and_resize_kernel.cu.o']
     with_cuda = True
 
-extra_compile_args = ['-fopenmp', '-std=c99']
+extra_compile_args = ['-std=c99']
 
 this_file = os.path.dirname(os.path.realpath(__file__))
 print(this_file)

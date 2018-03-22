@@ -1,12 +1,13 @@
 import numpy as np
 import torch
+import sys
 from torch import nn
 from torch.autograd import Variable, gradcheck
 try:
     import tensorflow as tf
     import tensorflow.contrib.slim as slim
-except ImportError, e:
-    print(e)
+except:
+    print("Unexpected error:", sys.exc_info()[0])
     tf = None
 
 from roi_align.crop_and_resize import CropAndResizeFunction
@@ -132,7 +133,7 @@ if __name__ == '__main__':
     def main():
         crop_height = 7
         crop_width = 7
-        is_cuda = True
+        is_cuda = torch.cuda.is_available()
 
         if tf is not None:
             compare_with_tf(crop_height, crop_width, is_cuda=is_cuda)
