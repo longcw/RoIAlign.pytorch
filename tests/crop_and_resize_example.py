@@ -1,16 +1,18 @@
-import numpy as np
 import torch
 from torch import nn
 from torchvision import transforms, utils
 from torch.autograd import Variable, gradcheck
 from roi_align.crop_and_resize import CropAndResizeFunction
 import matplotlib.pyplot as plt
-import cv2
+from skimage.io import imread
+
+
 def to_varabile(tensor, requires_grad=False, is_cuda=True):
     if is_cuda:
         tensor = tensor.cuda()
     var = Variable(tensor, requires_grad=requires_grad)
     return var
+
 
 crop_height = 500
 crop_width = 500
@@ -21,18 +23,18 @@ img_path1 = 'tests/images/choco.png'
 img_path2 = 'tests/images/snow.png'
 
 # Define the boxes ( crops )
-#box = [y1/heigth , x1/width , y2/heigth , x2/width]
-boxes_data = torch.FloatTensor([[0, 0, 1, 1],[0, 0, 0.5, 0.5]])
+# box = [y1/heigth , x1/width , y2/heigth , x2/width]
+boxes_data = torch.FloatTensor([[0, 0, 1, 1], [0, 0, 0.5, 0.5]])
 
 # Create an index to say which box crops which image
 box_index_data = torch.IntTensor([0, 1])
 
 # Import the images from file
-image_data1 = transforms.ToTensor()(cv2.imread(img_path1, cv2.IMREAD_COLOR)).unsqueeze(0)
-image_data2 = transforms.ToTensor()(cv2.imread(img_path2, cv2.IMREAD_COLOR)).unsqueeze(0)
+image_data1 = transforms.ToTensor()(imread(img_path1)).unsqueeze(0)
+image_data2 = transforms.ToTensor()(imread(img_path2)).unsqueeze(0)
 
 # Create a batch of 2 images
-image_data  = torch.cat((image_data1, image_data2), 0)
+image_data = torch.cat((image_data1, image_data2), 0)
 
 # Convert from numpy to Variables
 image_torch = to_varabile(image_data, is_cuda=is_cuda)

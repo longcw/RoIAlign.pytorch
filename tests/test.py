@@ -99,10 +99,12 @@ def compare_with_tf(crop_height, crop_width, is_cuda=True):
         )
 
     crops_diff = np.abs(crops_tf_data - crops_torch_data)
-    print('forward:', crops_tf_data.max(), crops_diff.min(), crops_diff.max(), crops_diff.mean())
+    print('forward (maxval, min_err, max_err, mean_err):',
+          crops_tf_data.max(), crops_diff.min(), crops_diff.max(), crops_diff.mean())
 
     grad_diff = np.abs(grad_tf_data - grad_torch_data)
-    print('backward:', grad_tf_data.max(), grad_diff.min(), grad_diff.max(), grad_diff.mean())
+    print('backward (maxval, min_err, max_err, mean_err):',
+          grad_tf_data.max(), grad_diff.min(), grad_diff.max(), grad_diff.mean())
 
 
 def test_roialign(is_cuda=True):
