@@ -1,6 +1,8 @@
 #ifndef _CropAndResize_Kernel
 #define _CropAndResize_Kernel
 
+//#include <cuda_runtime.h>
+#include <ATen/cuda/CUDAContext.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
