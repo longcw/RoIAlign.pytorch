@@ -28,18 +28,17 @@ See more details about the difference of
 **Warning:**
 Currently it only works using the default GPU (index 0)
 
-## Usage
+## Usage````
 + Install and test
     ```
-    conda activate <CONDA_ENVIRONMENT>
-    ./install.sh
+    python setup.py install
     ./test.sh
     ```
 
 + Use RoIAlign or crop_and_resize
     ```python
-    from roi_align.roi_align import RoIAlign      # RoIAlign module
-    from roi_align.roi_align import CropAndResize # crop_and_resize module
+    from roi_align import RoIAlign      # RoIAlign module
+    from roi_align import CropAndResize # crop_and_resize module
 
     # input data
     image = to_varabile(image_data, requires_grad=True, is_cuda=is_cuda)
