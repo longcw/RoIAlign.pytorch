@@ -3,11 +3,10 @@ This is a PyTorch version of [RoIAlign](https://arxiv.org/abs/1703.06870).
 This implementation is based on `crop_and_resize`
 and supports both forward and backward on CPU and GPU.
 
-**NOTE:** This repo only supports pytorch < 0.4. 
-You can find an official version from 
-[facebookresearch/maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark/tree/master/maskrcnn_benchmark/csrc).
-If you want this project to support pytorch 1.0 please submit an issue and I will
-take time to upgrade it.
+**NOTE:** Thanks [meikuam](https://github.com/meikuam) for updating 
+this repo for ***PyTorch 1.0***. You can find the original version for 
+`torch <= 0.4.1` in [pytorch_0.4](https://github.com/longcw/RoIAlign.pytorch/tree/pytorch_0.4)
+branch.
 
 
 ## Introduction
@@ -28,7 +27,7 @@ See more details about the difference of
 **Warning:**
 Currently it only works using the default GPU (index 0)
 
-## Usage````
+## Usage
 + Install and test
     ```
     python setup.py install
@@ -48,20 +47,4 @@ Currently it only works using the default GPU (index 0)
     # RoIAlign layer
     roi_align = RoIAlign(crop_height, crop_width)
     crops = roi_align(image, boxes, box_index)
-    ```
-
-+ [Issue1](https://github.com/longcw/RoIAlign.pytorch/issues/1): gradcheck
-    and difference of `RoIAlign` and `crop_and_resize`.
-
-+ Changing `-arch` in `make.sh` for your GPU
-    ```
-    # Which CUDA capabilities do we want to pre-build for?
-    # https://developer.nvidia.com/cuda-gpus
-    # Compute/shader model   Cards
-    # 6.1                    P4, P40, Titan Xp, GTX 1080 Ti, GTX 1080
-    # 6.0                    P100
-    # 5.2                    M40, Titan X, GTX 980
-    # 3.7                    K80
-    # 3.5                    K40, K20
-    # 3.0                    K10, Grid K520 (AWS G2)
     ```
