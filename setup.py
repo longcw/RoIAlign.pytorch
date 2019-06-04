@@ -5,7 +5,8 @@ from torch.utils.cpp_extension import BuildExtension, CUDAExtension, CppExtensio
 modules = [
     CppExtension(
         'roi_align.crop_and_resize_cpu',
-        ['roi_align/src/crop_and_resize.cpp']
+        ['roi_align/src/crop_and_resize.cpp'],
+        extra_compile_args={'cxx': ['-g', '-fopenmp']}
         )
 ]
 
