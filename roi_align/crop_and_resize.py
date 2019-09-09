@@ -50,7 +50,7 @@ class CropAndResizeFunction(Function):
                 grad_outputs, boxes, box_ind, grad_image
             )
 
-        return grad_image, None, None
+        return grad_image, None, None, None, None, None
 
 
 class CropAndResize(nn.Module):

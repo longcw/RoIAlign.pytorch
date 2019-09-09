@@ -3,6 +3,10 @@ This is a PyTorch version of [RoIAlign](https://arxiv.org/abs/1703.06870).
 This implementation is based on `crop_and_resize`
 and supports both forward and backward on CPU and GPU.
 
+**NOTE:** Thanks [meikuam](https://github.com/meikuam) for updating 
+this repo for ***PyTorch 1.0***. You can find the original version for 
+`torch <= 0.4.1` in [pytorch_0.4](https://github.com/longcw/RoIAlign.pytorch/tree/pytorch_0.4)
+branch.
 
 ## Introduction
 The `crop_and_resize` function is ported from [tensorflow](https://www.tensorflow.org/api_docs/python/tf/image/crop_and_resize),
@@ -22,7 +26,7 @@ See more details about the difference of
 **Warning:**
 Currently it only works using the default GPU (index 0)
 
-## Usage````
+## Usage
 + Install and test
     ```
     python setup.py install
