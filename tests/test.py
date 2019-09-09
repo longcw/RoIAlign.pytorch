@@ -68,7 +68,7 @@ def compare_with_tf(crop_height, crop_width, is_cuda=True):
     box_index = to_varabile(box_index_data, requires_grad=False, is_cuda=is_cuda)
 
     print('pytorch forward and backward start')
-    crops_torch = CropAndResizeFunction(crop_height, crop_width, 0)(image_torch, boxes, box_index)
+    crops_torch = CropAndResizeFunction.apply(image_torch, boxes, box_index, crop_height, crop_width, 0)
     crops_torch = conv_torch(crops_torch)
     crops_torch_data = crops_torch.data.cpu().numpy()
 

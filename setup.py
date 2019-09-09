@@ -23,7 +23,7 @@ if torch.cuda.is_available():
 
 setup(
     name='roi_align',
-    version='0.0.1',
+    version='0.0.2',
     description='PyTorch version of RoIAlign',
     author='Long Chen',
     author_email='longch1024@gmail.com',
@@ -32,5 +32,5 @@ setup(
 
     ext_modules=modules,
     cmdclass={'build_ext': BuildExtension},
-    install_requires=['torch']
+    install_requires=['torch>=1.2.0']
 )
