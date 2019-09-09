@@ -8,6 +8,7 @@ this repo for ***PyTorch 1.0***. You can find the original version for
 `torch <= 0.4.1` in [pytorch_0.4](https://github.com/longcw/RoIAlign.pytorch/tree/pytorch_0.4)
 branch.
 
+
 ## Introduction
 The `crop_and_resize` function is ported from [tensorflow](https://www.tensorflow.org/api_docs/python/tf/image/crop_and_resize),
 and has the same interface with tensorflow version, except the input feature map
@@ -93,20 +94,4 @@ Currently it only works using the default GPU (index 0)
               [30.6250, 31.5000, 32.3750, 33.2500],
               [36.7500, 37.6250, 38.5000, 39.3750],
               [ 0.0000,  0.0000,  0.0000,  0.0000]]]])
-    ```
-
-+ [Issue1](https://github.com/longcw/RoIAlign.pytorch/issues/1): gradcheck
-    and difference of `RoIAlign` and `crop_and_resize`.
-
-+ Changing `-arch` in `make.sh` for your GPU
-    ```
-    # Which CUDA capabilities do we want to pre-build for?
-    # https://developer.nvidia.com/cuda-gpus
-    # Compute/shader model   Cards
-    # 6.1                    P4, P40, Titan Xp, GTX 1080 Ti, GTX 1080
-    # 6.0                    P100
-    # 5.2                    M40, Titan X, GTX 980
-    # 3.7                    K80
-    # 3.5                    K40, K20
-    # 3.0                    K10, Grid K520 (AWS G2)
     ```
