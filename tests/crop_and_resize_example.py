@@ -42,7 +42,7 @@ boxes = to_varabile(boxes_data, is_cuda=is_cuda)
 box_index = to_varabile(box_index_data, is_cuda=is_cuda)
 
 # Crops and resize bbox1 from img1 and bbox2 from img2
-crops_torch = CropAndResizeFunction(crop_height, crop_width, 0)(image_torch, boxes, box_index)
+crops_torch = CropAndResizeFunction.apply(image_torch, boxes, box_index, crop_height, crop_width, 0)
 
 # Visualize the crops
 print(crops_torch.data.size())

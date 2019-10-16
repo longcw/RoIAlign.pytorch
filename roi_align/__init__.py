@@ -1,1 +1,1 @@
-from .roi_align import RoIAlign, CropAndResizeFunction
+from .roi_align import RoIAlign, CropAndResizeFunction, CropAndResize

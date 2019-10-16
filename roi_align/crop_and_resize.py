@@ -12,34 +12,34 @@ if torch.cuda.is_available():
 
 class CropAndResizeFunction(Function):
 
-    def __init__(self, crop_height, crop_width, extrapolation_value=0):
-        self.crop_height = crop_height
-        self.crop_width = crop_width
-        self.extrapolation_value = extrapolation_value
-
-    def forward(self, image, boxes, box_ind):
+    @staticmethod
+    def forward(ctx, image, boxes, box_ind, crop_height, crop_width, extrapolation_value=0):
+        ctx.crop_height = crop_height
+        ctx.crop_width = crop_width
+        ctx.extrapolation_value = extrapolation_value
         crops = torch.zeros_like(image)
 
         if image.is_cuda:
             crop_and_resize_gpu.forward(
                 image, boxes, box_ind,
-                self.extrapolation_value, self.crop_height, self.crop_width, crops)
+                ctx.extrapolation_value, ctx.crop_height, ctx.crop_width, crops)
         else:
             crop_and_resize_cpu.forward(
                 image, boxes, box_ind,
-                self.extrapolation_value, self.crop_height, self.crop_width, crops)
+                ctx.extrapolation_value, ctx.crop_height, ctx.crop_width, crops)
 
         # save for backward
-        self.im_size = image.size()
-        self.save_for_backward(boxes, box_ind)
+        ctx.im_size = image.size()
+        ctx.save_for_backward(boxes, box_ind)
 
         return crops
 
-    def backward(self, grad_outputs):
-        boxes, box_ind = self.saved_tensors
+    @staticmethod
+    def backward(ctx, grad_outputs):
+        boxes, box_ind = ctx.saved_tensors
 
         grad_outputs = grad_outputs.contiguous()
-        grad_image = torch.zeros_like(grad_outputs).resize_(*self.im_size)
+        grad_image = torch.zeros_like(grad_outputs).resize_(*ctx.im_size)
 
         if grad_outputs.is_cuda:
             crop_and_resize_gpu.backward(
@@ -50,7 +50,7 @@ class CropAndResizeFunction(Function):
                 grad_outputs, boxes, box_ind, grad_image
             )
 
-        return grad_image, None, None
+        return grad_image, None, None, None, None, None
 
 
 class CropAndResize(nn.Module):
@@ -67,4 +67,4 @@ class CropAndResize(nn.Module):
         self.extrapolation_value = extrapolation_value
 
     def forward(self, image, boxes, box_ind):
-        return CropAndResizeFunction(self.crop_height, self.crop_width, self.extrapolation_value)(image, boxes, box_ind)
+        return CropAndResizeFunction.apply(image, boxes, box_ind, self.crop_height, self.crop_width, self.extrapolation_value)

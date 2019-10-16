@@ -45,4 +45,4 @@ class RoIAlign(nn.Module):
 
         boxes = boxes.detach().contiguous()
         box_ind = box_ind.detach()
-        return CropAndResizeFunction(self.crop_height, self.crop_width, self.extrapolation_value)(featuremap, boxes, box_ind)
+        return CropAndResizeFunction.apply(featuremap, boxes, box_ind, self.crop_height, self.crop_width, self.extrapolation_value)
