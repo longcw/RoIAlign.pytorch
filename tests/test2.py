@@ -1,3 +1,5 @@
+import sys, os
+sys.path.append(os.getcwd())
 import numpy as np
 import torch
 from torch.autograd import Variable
@@ -25,4 +27,6 @@ boxes = to_varabile(boxes_data, requires_grad=False, is_cuda=is_cuda)
 box_index = to_varabile(box_index_data, requires_grad=False, is_cuda=is_cuda)
 
 # set transform_fpcoor to False is the crop_and_resize
-print(RoIAlign.apply(image_torch, boxes, box_index, 3, 3, transform_fpcoor=True))
+roi_align =RoIAlign(3, 3, transform_fpcoor=True)
+print(roi_align(image_torch, boxes, box_index))
+# print(RoIAlign.apply(image_torch, boxes, box_index, 3, 3, transform_fpcoor=True))
