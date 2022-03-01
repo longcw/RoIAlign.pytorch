@@ -34,6 +34,17 @@ Currently it only works using the default GPU (index 0)
     ./test.sh
     ```
 
+## Adjust
++ Build and test
+    ```
+    export CUDA_HOME=/usr/local/cuda-11.3
+    python setup.py build
+    ```
+    Move the compiled dynamic link library to the *roi_align* file directory, Then start testing
+    ```
+    ./test.sh
+    ``` 
+
 + Use RoIAlign or crop_and_resize 
     
     Since PyTorch 1.2.0 [Legacy autograd function with non-static forward method is deprecated.](https://github.com/pytorch/pytorch/blob/fdfc676eb6c4d9f50496e564976fbe6d124e23a5/torch/csrc/autograd/python_function.cpp#L636-L638)
