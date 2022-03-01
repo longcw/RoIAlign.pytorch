@@ -37,6 +37,7 @@ Currently it only works using the default GPU (index 0)
 ## Adjust
 + Build and test
     ```
+    export CUDA_HOME=/usr/local/cuda-11.3
     python setup.py build
     ```
     Move the compiled dynamic link library to the *roi_align* file directory, Then start testing
